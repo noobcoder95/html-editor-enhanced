@@ -120,7 +120,7 @@ class HtmlEditorController extends unsupported.HtmlEditorController {
   /// disables the Html editor
   @override
   void disable() {
-    toolbar!.disable();
+    toolbar?.disable();
     _evaluateJavascriptWeb(data: {'type': 'toIframe: disable'});
   }
 
