@@ -703,31 +703,31 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
           data['type'].contains('toDart:') &&
           data['view'] == createdViewId) {
         if (data['type'].contains('onBeforeCommand')) {
-          c.onBeforeCommand!.call(data['contents']);
+          c.onBeforeCommand?.call(data['contents']);
         }
         if (data['type'].contains('onChangeContent')) {
-          c.onChangeContent!.call(data['contents']);
+          c.onChangeContent?.call(data['contents']);
         }
         if (data['type'].contains('onChangeCodeview')) {
-          c.onChangeCodeview!.call(data['contents']);
+          c.onChangeCodeview?.call(data['contents']);
         }
         if (data['type'].contains('onDialogShown')) {
-          c.onDialogShown!.call();
+          c.onDialogShown?.call();
         }
         if (data['type'].contains('onEnter')) {
-          c.onEnter!.call();
+          c.onEnter?.call();
         }
         if (data['type'].contains('onFocus')) {
-          c.onFocus!.call();
+          c.onFocus?.call();
         }
         if (data['type'].contains('onBlur')) {
-          c.onBlur!.call();
+          c.onBlur?.call();
         }
         if (data['type'].contains('onBlurCodeview')) {
-          c.onBlurCodeview!.call();
+          c.onBlurCodeview?.call();
         }
         if (data['type'].contains('onImageLinkInsert')) {
-          c.onImageLinkInsert!.call(data['url']);
+          c.onImageLinkInsert?.call(data['url']);
         }
         if (data['type'].contains('onImageUpload')) {
           var map = <String, dynamic>{
@@ -740,11 +740,11 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
           };
           var jsonStr = json.encode(map);
           var file = fileUploadFromJson(jsonStr);
-          c.onImageUpload!.call(file);
+          c.onImageUpload?.call(file);
         }
         if (data['type'].contains('onImageUploadError')) {
           if (data['base64'] != null) {
-            c.onImageUploadError!.call(
+            c.onImageUploadError?.call(
                 null,
                 data['base64'],
                 data['error'].contains('base64')
@@ -762,7 +762,7 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
             };
             var jsonStr = json.encode(map);
             var file = fileUploadFromJson(jsonStr);
-            c.onImageUploadError!.call(
+            c.onImageUploadError?.call(
                 file,
                 null,
                 data['error'].contains('base64')
@@ -773,22 +773,22 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
           }
         }
         if (data['type'].contains('onKeyDown')) {
-          c.onKeyDown!.call(data['keyCode']);
+          c.onKeyDown?.call(data['keyCode']);
         }
         if (data['type'].contains('onKeyUp')) {
-          c.onKeyUp!.call(data['keyCode']);
+          c.onKeyUp?.call(data['keyCode']);
         }
         if (data['type'].contains('onMouseDown')) {
-          c.onMouseDown!.call();
+          c.onMouseDown?.call();
         }
         if (data['type'].contains('onMouseUp')) {
-          c.onMouseUp!.call();
+          c.onMouseUp?.call();
         }
         if (data['type'].contains('onPaste')) {
-          c.onPaste!.call();
+          c.onPaste?.call();
         }
         if (data['type'].contains('onScroll')) {
-          c.onScroll!.call();
+          c.onScroll?.call();
         }
         if (data['type'].contains('characterCount')) {
           widget.controller.characterCount = data['totalChars'];
