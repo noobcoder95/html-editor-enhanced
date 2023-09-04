@@ -59,36 +59,22 @@ class _HtmlEditorExampleState extends State<HtmlEditorExample> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              SizedBox(
-                height: 420,
-                child: Stack(
-                  children: [
-                    HtmlEditor(
-                      controller: controller,
-                      callbacks: Callbacks(
-                          onInit: () {
-                            controller.evaluateJavascriptWeb("editorBG");
-                            controller.disable();
-                          }),
-                      htmlEditorOptions: HtmlEditorOptions(
-                          hint: 'Your text here...',
-                          shouldEnsureVisible: false,
-                          webInitialScripts: UnmodifiableListView([
-                            WebScript(name: "editorBG", script: "document.getElementsByClassName('note-editable')[0].style.backgroundColor='white';"),
-                          ])
-                      ),
-                      htmlToolbarOptions: HtmlToolbarOptions(
-                        toolbarPosition: ToolbarPosition.custom,
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Container(
-                        height: 20,
-                        color: Colors.white,
-                      ),
-                    )
-                  ],
+              HtmlEditor(
+                controller: controller,
+                callbacks: Callbacks(
+                    onInit: () {
+                      controller.evaluateJavascriptWeb("editorBG");
+                      controller.disable();
+                    }),
+                htmlEditorOptions: HtmlEditorOptions(
+                    hint: 'Your text here...',
+                    shouldEnsureVisible: false,
+                    webInitialScripts: UnmodifiableListView([
+                      WebScript(name: "editorBG", script: "document.getElementsByClassName('note-editable')[0].style.backgroundColor='white';"),
+                    ])
+                ),
+                htmlToolbarOptions: HtmlToolbarOptions(
+                  toolbarPosition: ToolbarPosition.custom,
                 ),
               ),
             ],
