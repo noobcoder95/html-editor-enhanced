@@ -522,7 +522,10 @@ class _HtmlEditorWidgetMobileState extends State<HtmlEditorWidget> {
                             window.flutter_inappwebview.callHandler('FormatSettings', message);
                           }
                       """;
-                      await controller.evaluateJavascript(source: widget.htmlEditorOptions.disabled ? scriptAutoHeight : script);
+                      await controller.evaluateJavascript(
+                          source: widget.htmlEditorOptions.disabled
+                              && widget.htmlEditorOptions.useAutoExpand
+                              ? scriptAutoHeight : script);
                       await controller.evaluateJavascript(
                           source:
                               "document.onselectionchange = onSelectionChange; console.log('done');");
