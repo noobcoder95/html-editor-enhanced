@@ -528,7 +528,7 @@ class _HtmlEditorWidgetMobileState extends State<HtmlEditorWidget> {
                               ? scriptAutoHeight : script);
                       await controller.evaluateJavascript(
                           source:
-                              "document.onselectionchange = onSelectionChange; console.log('done');");
+                              "document.onselectionchange = onSelectionChange;");
                       await controller.evaluateJavascript(
                           source:
                               "document.getElementsByClassName('note-editable')[0].setAttribute('inputmode', '${describeEnum(widget.htmlEditorOptions.inputType)}');");

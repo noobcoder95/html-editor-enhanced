@@ -225,7 +225,7 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
        
         window.parent.addEventListener('message', handleMessage, false);
         document.onselectionchange = onSelectionChange;
-        console.log('done');
+        
       
         function handleMessage(e) {
           if (e && e.data && e.data.includes("toIframe:")) {
@@ -465,7 +465,7 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
        
         window.parent.addEventListener('message', handleMessage, false);
         document.onselectionchange = onSelectionChange;
-        console.log('done');
+        
       
         function handleMessage(e) {
           if (e && e.data && e.data.includes("toIframe:")) {
