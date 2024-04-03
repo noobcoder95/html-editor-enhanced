@@ -119,9 +119,9 @@ class ExpandIconDelegate extends SliverPersistentHeaderDelegate {
       child: IconButton(
         constraints: BoxConstraints(
           maxHeight: _size!,
-          maxWidth: _size!,
+          maxWidth: _size,
         ),
-        iconSize: _size! * 3 / 5,
+        iconSize: _size * 3 / 5,
         icon: Icon(
           _isExpanded ? Icons.expand_less : Icons.expand_more,
           color: Colors.grey,

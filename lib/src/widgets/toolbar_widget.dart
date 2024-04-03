@@ -2061,7 +2061,7 @@ class ToolbarWidgetState extends State<ToolbarWidget> {
                                         true;
                                     if (proceed) {
                                       widget.controller.insertHtml(
-                                          "<img src='data:image/${result!.files.single.extension};base64,$base64Data' data-filename='${result!.files.single.name}'/>");
+                                          "<img src='data:image/${result!.files.single.extension};base64,$base64Data' data-filename='${result!.files.single.name}' alt="'${result!.files.single.name}'"/>");
                                     }
                                     Navigator.of(context).pop();
                                   } else {
