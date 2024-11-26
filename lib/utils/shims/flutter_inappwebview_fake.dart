@@ -232,7 +232,7 @@ class UserScript {
   }
 }
 
-final _contentWorldNameRegExp = RegExp(r'\s');
+final _contentWorldNameRegExp = RegExp(r'[\s]');
 
 ///Class that represents an object that defines a scope of execution for JavaScript code and which you use to prevent conflicts between different scripts.
 ///

@@ -940,14 +940,7 @@ a.note-dropdown-item,a.note-dropdown-item:hover {
 }
 
 .note-editor.note-airframe .note-editing-area .note-editable[contenteditable=false],.note-editor.note-frame .note-editing-area .note-editable[contenteditable=false] {
-  background-color: #ffffff;
-  cursor: default;
-  webkit-touch-callout: none;
-  webkit-user-select: none;
-  khtml-user-select: none;
-  moz-user-select: none;
-  ms-user-select: none;
-  user-select: none;
+  background-color: #e5e5e5;
 }
 
 .note-editor.note-airframe .note-editing-area .note-codable,.note-editor.note-frame .note-editing-area .note-codable {
@@ -1069,8 +1062,10 @@ a.note-dropdown-item,a.note-dropdown-item:hover {
 }
 
 .note-editor.note-airframe .note-statusbar .note-resizebar,.note-editor.note-frame .note-statusbar .note-resizebar {
-  display: none;
-  cursor: default;
+  padding-top: 1px;
+  height: 9px;
+  width: 100%;
+  cursor: ns-resize;
 }
 
 .note-editor.note-airframe .note-statusbar .note-resizebar .note-icon-bar,.note-editor.note-frame .note-statusbar .note-resizebar .note-icon-bar {

@@ -25,7 +25,7 @@ class HtmlEditorOptions {
     this.webInitialScripts,
     this.shouldEnsureVisible = false,
     this.spellCheck = false,
-    this.useAutoExpand = false});
+  });
 
   /// The editor will automatically adjust its height when the keyboard is active
   /// to prevent the keyboard overlapping the editor.
@@ -124,11 +124,6 @@ class HtmlEditorOptions {
   ///
   /// Default value is false.
   final bool spellCheck;
-
-  /// Specify whether or not the editor should auto expanded vertically.
-  ///
-  /// Default value is false.
-  final bool useAutoExpand;
 }
 
 /// Options that modify the toolbar and its behavior

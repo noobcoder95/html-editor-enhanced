@@ -66,20 +66,6 @@ class _HtmlEditorExampleState extends State<HtmlEditorExample> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              /*
-              READ ONLY MODE
-              HtmlEditor(
-                controller: controller,
-                htmlEditorOptions: HtmlEditorOptions(
-                  disabled: true,
-                  shouldEnsureVisible: false,
-                  initialText: 'qwertyuioiutrdesdfghjikojhgfdszxcvbhuytrdxcvbhjytfrdsxcvbhjytfrdxcvbhgftdrxcvbhgytfrdxcv bhjgfdxcvbhgfdxc vbhgfc vbnhgfdxcvbgfdxcv bhgfdxcvbhgfcvbhgfcv bnhgfcv bnhgfdxcvbnjhygfcvgbhygtresdxswawszdewasdxfghgfcgvbnjuhygtfcvbnjkiuyhgjkoi9uhjqwertyuioiutrdesdfghjikojhgfdszxcvbhuytrdxcvbhjytfrdsxcvbhjytfrdxcvbhgftdrxcvbhgytfrdxcv bhjgfdxcvbhgfdxc vbhgfc vbnhgfdxcvbgfdxcv bhgfdxcvbhgfcvbhgfcv bnhgfcv bnhgfdxcvbnjhygfcvgbhygtresdxswawszdewasdxfghgfcgvbnjuhygtfcvbnjkiuyhgjkoi9uhjqwertyuioiutrdesdfghjikojhgfdszxcvbhuytrdxcvbhjytfrdsxcvbhjytfrdxcvbhgftdrxcvbhgytfrdxcv bhjgfdxcvbhgfdxc vbhgfc vbnhgfdxcvbgfdxcv bhgfdxcvbhgfcvbhgfcv bnhgfcv bnhgfdxcvbnjhygfcvgbhygtresdxswawszdewasdxfghgfcgvbnjuhygtfcvbnjkiuyhgjkoi9uhjqwertyuioiutrdesdfghjikojhgfdszxcvbhuytrdxcvbhjytfrdsxcvbhjytfrdxcvbhgftdrxcvbhgytfrdxcv bhjgfdxcvbhgfdxc vbhgfc vbnhgfdxcvbgfdxcv bhgfdxcvbhgfcvbhgfcv bnhgfcv bnhgfdxcvbnjhygfcvgbhygtresdxswawszdewasdxfghgfcgvbnjuhygtfcvbnjkiuyhgjkoi9uhjqwertyuioiutrdesdfghjikojhgfdszxcvbhuytrdxcvbhjytfrdsxcvbhjytfrdxcvbhgftdrxcvbhgytfrdxcv bhjgfdxcvbhgfdxc vbhgfc vbnhgfdxcvbgfdxcv bhgfdxcvbhgfcvbhgfcv bnhgfcv bnhgfdxcvbnjhygfcvgbhygtresdxswawszdewasdxfghgfcgvbnjuhygtfcvbnjkiuyhgjkoi9uhjqwertyuioiutrdesdfghjikojhgfdszxcvbhuytrdxcvbhjytfrdsxcvbhjytfrdxcvbhgftdrxcvbhgytfrdxcv bhjgfdxcvbhgfdxc vbhgfc vbnhgfdxcvbgfdxcv bhgfdxcvbhgfcvbhgfcv bnhgfcv bnhgfdxcvbnjhygfcvgbhygtresdxswawszdewasdxfghgfcgvbnjuhygtfcvbnjkiuyhgjkoi9uhjqwertyuioiutrdesdfghjikojhgfdszxcvbhuytrdxcvbhjytfrdsxcvbhjytfrdxcvbhgftdrxcvbhgytfrdxcv bhjgfdxcvbhgfdxc vbhgfc vbnhgfdxcvbgfdxcv bhgfdxcvbhgfcvbhgfcv bnhgfcv bnhgfdxcvbnjhygfcvgbhygtresdxswawszdewasdxfghgfcgvbnjuhygtfcvbnjkiuyhgjkoi9uhjqwertyuioiutrdesdfghjikojhgfdszxcvbhuytrdxcvbhjytfrdsxcvbhjytfrdxcvbhgftdrxcvbhgytfrdxcv bhjgfdxcvbhgfdxc vbhgfc vbnhgfdxcvbgfdxcv bhgfdxcvbhgfcvbhgfcv bnhgfcv bnhgfdxcvbnjhygfcvgbhygtresdxswawszdewasdxfghgfcgvbnjuhygtfcvbnjkiuyhgjkoi9uhjqwertyuioiutrdesdfghjikojhgfdszxcvbhuytrdxcvbhjytfrdsxcvbhjytfrdxcvbhgftdrxcvbhgytfrdxcv bhjgfdxcvbhgfdxc vbhgfc vbnhgfdxcvbgfdxcv bhgfdxcvbhgfcvbhgfcv bnhgfcv bnhgfdxcvbnjhygfcvgbhygtresdxswawszdewasdxfghgfcgvbnjuhygtfcvbnjkiuyhgjkoi9uhjqwertyuioiutrdesdfghjikojhgfdszxcvbhuytrdxcvbhjytfrdsxcvbhjytfrdxcvbhgftdrxcvbhgytfrdxcv bhjgfdxcvbhgfdxc vbhgfc vbnhgfdxcvbgfdxcv bhgfdxcvbhgfcvbhgfcv bnhgfcv bnhgfdxcvbnjhygfcvgbhygtresdxswawszdewasdxfghgfcgvbnjuhygtfcvbnjkiuyhgjkoi9uhjqwertyuioiutrdesdfghjikojhgfdszxcvbhuytrdxcvbhjytfrdsxcvbhjytfrdxcvbhgftdrxcvbhgytfrdxcv bhjgfdxcvbhgfdxc vbhgfc vbnhgfdxcvbgfdxcv bhgfdxcvbhgfcvbhgfcv bnhgfcv bnhgfdxcvbnjhygfcvgbhygtresdxswawszdewasdxfghgfcgvbnjuhygtfcvbnjkiuyhgjkoi9uhjqwertyuioiutrdesdfghjikojhgfdszxcvbhuytrdxcvbhjytfrdsxcvbhjytfrdxcvbhgftdrxcvbhgytfrdxcv bhjgfdxcvbhgfdxc vbhgfc vbnhgfdxcvbgfdxcv bhgfdxcvbhgfcvbhgfcv bnhgfcv bnhgfdxcvbnjhygfcvgbhygtresdxswawszdewasdxfghgfcgvbnjuhygtfcvbnjkiuyhgjkoi9uhjqwertyuioiutrdesdfghjikojhgfdszxcvbhuytrdxcvbhjytfrdsxcvbhjytfrdxcvbhgftdrxcvbhgytfrdxcv bhjgfdxcvbhgfdxc vbhgfc vbnhgfdxcvbgfdxcv bhgfdxcvbhgfcvbhgfcv bnhgfcv bnhgfdxcvbnjhygfcvgbhygtresdxswawszdewasdxfghgfcgvbnjuhygtfcvbnjkiuyhgjkoi9uhjqwertyuioiutrdesdfghjikojhgfdszxcvbhuytrdxcvbhjytfrdsxcvbhjytfrdxcvbhgftdrxcvbhgytfrdxcv bhjgfdxcvbhgfdxc vbhgfc vbnhgfdxcvbgfdxcv bhgfdxcvbhgfcvbhgfcv bnhgfcv bnhgfdxcvbnjhygfcvgbhygtresdxswawszdewasdxfghgfcgvbnjuhygtfcvbnjkiuyhgjkoi9uhjqwertyuioiutrdesdfghjikojhgfdszxcvbhuytrdxcvbhjytfrdsxcvbhjytfrdxcvbhgftdrxcvbhgytfrdxcv bhjgfdxcvbhgfdxc vbhgfc vbnhgfdxcvbgfdxcv bhgfdxcvbhgfcvbhgfcv bnhgfcv bnhgfdxcvbnjhygfcvgbhygtresdxswawszdewasdxfghgfcgvbnjuhygtfcvbnjkiuyhgjkoi9uhjqwertyuioiutrdesdfghjikojhgfdszxcvbhuytrdxcvbhjytfrdsxcvbhjytfrdxcvbhgftdrxcvbhgytfrdxcv bhjgfdxcvbhgfdxc vbhgfc vbnhgfdxcvbgfdxcv bhgfdxcvbhgfcvbhgfcv bnhgfcv bnhgfdxcvbnjhygfcvgbhygtresdxswawszdewasdxfghgfcgvbnjuhygtfcvbnjkiuyhgjkoi9uhjqwertyuioiutrdesdfghjikojhgfdszxcvbhuytrdxcvbhjytfrdsxcvbhjytfrdxcvbhgftdrxcvbhgytfrdxcv bhjgfdxcvbhgfdxc vbhgfc vbnhgfdxcvbgfdxcv bhgfdxcvbhgfcvbhgfcv bnhgfcv bnhgfdxcvbnjhygfcvgbhygtresdxswawszdewasdxfghgfcgvbnjuhygtfcvbnjkiuyhgjkoi9uhj',
-                ),
-                htmlToolbarOptions: HtmlToolbarOptions(
-                  toolbarPosition: ToolbarPosition.custom,
-                ),
-              )
-              */
               HtmlEditor(
                 controller: controller,
                 htmlEditorOptions: HtmlEditorOptions(
@@ -92,89 +78,89 @@ class _HtmlEditorExampleState extends State<HtmlEditorExample> {
                   toolbarType: ToolbarType.nativeScrollable, //by default
                   onButtonPressed:
                       (ButtonType type, bool? status, Function? updateStatus) {
-                    debugPrint(
+                    print(
                         "button '${describeEnum(type)}' pressed, the current selected status is $status");
                     return true;
                   },
                   onDropdownChanged: (DropdownType type, dynamic changed,
                       Function(dynamic)? updateSelectedItem) {
-                    debugPrint(
+                    print(
                         "dropdown '${describeEnum(type)}' changed to $changed");
                     return true;
                   },
                   mediaLinkInsertInterceptor:
                       (String url, InsertFileType type) {
-                    debugPrint(url);
+                    print(url);
                     return true;
                   },
                   mediaUploadInterceptor:
                       (PlatformFile file, InsertFileType type) async {
-                    debugPrint(file.name); //filename
-                    debugPrint(file.size.toString()); //size in bytes
-                    debugPrint(file.extension); //file extension (eg jpeg or mp4)
+                    print(file.name); //filename
+                    print(file.size); //size in bytes
+                    print(file.extension); //file extension (eg jpeg or mp4)
                     return true;
                   },
                 ),
                 otherOptions: OtherOptions(height: 550),
                 callbacks: Callbacks(onBeforeCommand: (String? currentHtml) {
-                  debugPrint('html before change is $currentHtml');
+                  print('html before change is $currentHtml');
                 }, onChangeContent: (String? changed) {
-                  debugPrint('content changed to $changed');
+                  print('content changed to $changed');
                 }, onChangeCodeview: (String? changed) {
-                  debugPrint('code changed to $changed');
+                  print('code changed to $changed');
                 }, onChangeSelection: (EditorSettings settings) {
-                  debugPrint('parent element is ${settings.parentElement}');
-                  debugPrint('font name is ${settings.fontName}');
+                  print('parent element is ${settings.parentElement}');
+                  print('font name is ${settings.fontName}');
                 }, onDialogShown: () {
-                  debugPrint('dialog shown');
+                  print('dialog shown');
                 }, onEnter: () {
-                  debugPrint('enter/return pressed');
+                  print('enter/return pressed');
                 }, onFocus: () {
-                  debugPrint('editor focused');
+                  print('editor focused');
                 }, onBlur: () {
-                  debugPrint('editor unfocused');
+                  print('editor unfocused');
                 }, onBlurCodeview: () {
-                  debugPrint('codeview either focused or unfocused');
+                  print('codeview either focused or unfocused');
                 }, onInit: () {
-                  debugPrint('init');
+                  print('init');
                 },
                     //this is commented because it overrides the default Summernote handlers
                     /*onImageLinkInsert: (String? url) {
-                    debugPrint(url ?? "unknown url");
+                    print(url ?? "unknown url");
                   },
                   onImageUpload: (FileUpload file) async {
-                    debugPrint(file.name);
-                    debugPrint(file.size);
-                    debugPrint(file.type);
-                    debugPrint(file.base64);
+                    print(file.name);
+                    print(file.size);
+                    print(file.type);
+                    print(file.base64);
                   },*/
                     onImageUploadError: (FileUpload? file, String? base64Str,
                         UploadError error) {
-                      debugPrint(describeEnum(error));
-                      debugPrint(base64Str ?? '');
-                      if (file != null) {
-                        debugPrint(file.name);
-                        debugPrint(file.size.toString());
-                        debugPrint(file.type);
-                      }
-                    }, onKeyDown: (int? keyCode) {
-                      debugPrint('$keyCode key downed');
-                      debugPrint(
-                          'current character count: ${controller.characterCount}');
-                    }, onKeyUp: (int? keyCode) {
-                      debugPrint('$keyCode key released');
-                    }, onMouseDown: () {
-                      debugPrint('mouse downed');
-                    }, onMouseUp: () {
-                      debugPrint('mouse released');
-                    }, onNavigationRequestMobile: (String url) {
-                      debugPrint(url);
-                      return NavigationActionPolicy.ALLOW;
-                    }, onPaste: () {
-                      debugPrint('pasted into editor');
-                    }, onScroll: () {
-                      debugPrint('editor scrolled');
-                    }),
+                  print(describeEnum(error));
+                  print(base64Str ?? '');
+                  if (file != null) {
+                    print(file.name);
+                    print(file.size);
+                    print(file.type);
+                  }
+                }, onKeyDown: (int? keyCode) {
+                  print('$keyCode key downed');
+                  print(
+                      'current character count: ${controller.characterCount}');
+                }, onKeyUp: (int? keyCode) {
+                  print('$keyCode key released');
+                }, onMouseDown: () {
+                  print('mouse downed');
+                }, onMouseUp: () {
+                  print('mouse released');
+                }, onNavigationRequestMobile: (String url) {
+                  print(url);
+                  return NavigationActionPolicy.ALLOW;
+                }, onPaste: () {
+                  print('pasted into editor');
+                }, onScroll: () {
+                  print('editor scrolled');
+                }),
                 plugins: [
                   SummernoteAtMention(
                       getSuggestionsMobile: (String value) {
@@ -185,7 +171,7 @@ class _HtmlEditorExampleState extends State<HtmlEditorExample> {
                       },
                       mentionsWeb: ['test1', 'test2', 'test3'],
                       onSelect: (String value) {
-                        debugPrint(value);
+                        print(value);
                       }),
                 ],
               ),
@@ -201,7 +187,7 @@ class _HtmlEditorExampleState extends State<HtmlEditorExample> {
                         controller.undo();
                       },
                       child:
-                      Text('Undo', style: TextStyle(color: Colors.white)),
+                          Text('Undo', style: TextStyle(color: Colors.white)),
                     ),
                     SizedBox(
                       width: 16,
@@ -213,7 +199,7 @@ class _HtmlEditorExampleState extends State<HtmlEditorExample> {
                         controller.clear();
                       },
                       child:
-                      Text('Reset', style: TextStyle(color: Colors.white)),
+                          Text('Reset', style: TextStyle(color: Colors.white)),
                     ),
                     SizedBox(
                       width: 16,
@@ -221,12 +207,12 @@ class _HtmlEditorExampleState extends State<HtmlEditorExample> {
                     TextButton(
                       style: TextButton.styleFrom(
                           backgroundColor:
-                          Theme.of(context).colorScheme.secondary),
+                              Theme.of(context).colorScheme.secondary),
                       onPressed: () async {
                         var txt = await controller.getText();
                         if (txt.contains('src=\"data:')) {
                           txt =
-                          '<text removed due to base-64 data, displaying the text could cause the app to crash>';
+                              '<text removed due to base-64 data, displaying the text could cause the app to crash>';
                         }
                         setState(() {
                           result = txt;
@@ -243,7 +229,7 @@ class _HtmlEditorExampleState extends State<HtmlEditorExample> {
                     TextButton(
                       style: TextButton.styleFrom(
                           backgroundColor:
-                          Theme.of(context).colorScheme.secondary),
+                              Theme.of(context).colorScheme.secondary),
                       onPressed: () {
                         controller.redo();
                       },
@@ -279,7 +265,7 @@ class _HtmlEditorExampleState extends State<HtmlEditorExample> {
                     TextButton(
                       style: TextButton.styleFrom(
                           backgroundColor:
-                          Theme.of(context).colorScheme.secondary),
+                              Theme.of(context).colorScheme.secondary),
                       onPressed: () async {
                         controller.enable();
                       },
@@ -300,7 +286,7 @@ class _HtmlEditorExampleState extends State<HtmlEditorExample> {
                     TextButton(
                       style: TextButton.styleFrom(
                           backgroundColor:
-                          Theme.of(context).colorScheme.secondary),
+                              Theme.of(context).colorScheme.secondary),
                       onPressed: () {
                         controller.insertText('Google');
                       },
@@ -313,7 +299,7 @@ class _HtmlEditorExampleState extends State<HtmlEditorExample> {
                     TextButton(
                       style: TextButton.styleFrom(
                           backgroundColor:
-                          Theme.of(context).colorScheme.secondary),
+                              Theme.of(context).colorScheme.secondary),
                       onPressed: () {
                         controller.insertHtml(
                             '''<p style="color: blue">Google in blue</p>''');
@@ -332,7 +318,7 @@ class _HtmlEditorExampleState extends State<HtmlEditorExample> {
                     TextButton(
                       style: TextButton.styleFrom(
                           backgroundColor:
-                          Theme.of(context).colorScheme.secondary),
+                              Theme.of(context).colorScheme.secondary),
                       onPressed: () async {
                         controller.insertLink(
                             'Google linked', 'https://google.com', true);
@@ -348,7 +334,7 @@ class _HtmlEditorExampleState extends State<HtmlEditorExample> {
                     TextButton(
                       style: TextButton.styleFrom(
                           backgroundColor:
-                          Theme.of(context).colorScheme.secondary),
+                              Theme.of(context).colorScheme.secondary),
                       onPressed: () {
                         controller.insertNetworkImage(
                             'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png',
@@ -376,7 +362,7 @@ class _HtmlEditorExampleState extends State<HtmlEditorExample> {
                             'Info notification', NotificationType.info);
                       },
                       child:
-                      Text('Info', style: TextStyle(color: Colors.white)),
+                          Text('Info', style: TextStyle(color: Colors.white)),
                     ),
                     SizedBox(
                       width: 16,
@@ -397,7 +383,7 @@ class _HtmlEditorExampleState extends State<HtmlEditorExample> {
                     TextButton(
                       style: TextButton.styleFrom(
                           backgroundColor:
-                          Theme.of(context).colorScheme.secondary),
+                              Theme.of(context).colorScheme.secondary),
                       onPressed: () async {
                         controller.addNotification(
                             'Success notification', NotificationType.success);
@@ -413,7 +399,7 @@ class _HtmlEditorExampleState extends State<HtmlEditorExample> {
                     TextButton(
                       style: TextButton.styleFrom(
                           backgroundColor:
-                          Theme.of(context).colorScheme.secondary),
+                              Theme.of(context).colorScheme.secondary),
                       onPressed: () {
                         controller.addNotification(
                             'Danger notification', NotificationType.danger);
@@ -448,7 +434,7 @@ class _HtmlEditorExampleState extends State<HtmlEditorExample> {
                     TextButton(
                       style: TextButton.styleFrom(
                           backgroundColor:
-                          Theme.of(context).colorScheme.secondary),
+                              Theme.of(context).colorScheme.secondary),
                       onPressed: () async {
                         controller.removeNotification();
                       },

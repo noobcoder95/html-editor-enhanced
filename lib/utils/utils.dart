@@ -119,9 +119,9 @@ class ExpandIconDelegate extends SliverPersistentHeaderDelegate {
       child: IconButton(
         constraints: BoxConstraints(
           maxHeight: _size!,
-          maxWidth: _size,
+          maxWidth: _size!,
         ),
-        iconSize: _size * 3 / 5,
+        iconSize: _size! * 3 / 5,
         icon: Icon(
           _isExpanded ? Icons.expand_less : Icons.expand_more,
           color: Colors.grey,
@@ -949,7 +949,7 @@ class _DropdownButtonState<T> extends State<CustomDropdownButton<T>>
   }
 
   TextStyle? get _textStyle =>
-      widget.style ?? Theme.of(context).textTheme.titleMedium;
+      widget.style ?? Theme.of(context).textTheme.titleSmall;
 
   void _handleTap() {
     final textDirection = Directionality.maybeOf(context);
@@ -1009,7 +1009,7 @@ class _DropdownButtonState<T> extends State<CustomDropdownButton<T>>
 
   double get _denseButtonHeight {
     final fontSize = _textStyle!.fontSize ??
-        Theme.of(context).textTheme.titleMedium!.fontSize!;
+        Theme.of(context).textTheme.titleSmall!.fontSize!;
     return max(fontSize, max(widget.iconSize, _kDenseButtonHeight));
   }
 
