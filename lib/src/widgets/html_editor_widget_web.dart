@@ -226,7 +226,6 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
        
         window.parent.addEventListener('message', handleMessage, false);
         document.onselectionchange = onSelectionChange;
-        console.log('done');
       
         function handleMessage(e) {
           if (e && e.data && e.data.includes("toIframe:")) {
@@ -241,7 +240,7 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
                 window.parent.postMessage(JSON.stringify({"view": "$createdViewId", "type": "toDart: htmlHeight", "height": height}), "*");
               }
               if (data["type"].includes("setInputType")) {
-                document.getElementsByClassName('note-editable')[0].setAttribute('inputmode', '${describeEnum(widget.htmlEditorOptions.inputType)}');
+                document.getElementsByClassName('note-editable')[0].setAttribute('inputmode', '${widget.htmlEditorOptions.inputType.name}');
               }
               if (data["type"].includes("setText")) {
                 \$('#summernote-2').summernote('code', data["text"]);
@@ -337,7 +336,244 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
                       var texto;
                       var count = 0;
                       var value = data["case"];
-                      console.log(value);
+                      var nodes = selected.nodes();
+                      for (var i=0; i< nodes.length; ++i) {
+                          if (nodes[i].nodeName == "#text") {
+                              count++;
+                              texto = nodes[i].nodeValue.toLowerCase();
+                              nodes[i].nodeValue = texto;
+                              if (value == 'upper') {
+                                 nodes[i].nodeValue = texto.toUpperCase();
+                              }
+                              else if (value == 'sentence' && count==1) {
+                                 nodes[i].nodeValue = texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+                              } else if (value == 'title') {
+                                var sentence = texto.split(" ");
+                                for(var j = 0; j< sentence.length; j++){
+                                   sentence[j] = sentence[j][0].toUpperCase() + sentence[j].slice(1);
+                                }
+                                nodes[i].nodeValue = sentence.join(" ");
+                              }
+                          }
+                      }
+                  }
+              }
+              if (data["type"].includes("insertTable")) {
+                \$('#summernote-2').summernote('insertTable', data["dimensions"]);
+              }
+              if (data["type"].includes("getSelectedTextHtml")) {
+                var range = window.getSelection().getRangeAt(0);
+                var content = range.cloneContents();
+                var span = document.createElement('span');
+                  
+                span.appendChild(content);
+                var htmlContent = span.innerHTML;
+                
+                window.parent.postMessage(JSON.stringify({"type": "toDart: getSelectedText", "text": htmlContent}), "*");
+              } else if (data["type"].includes("getSelectedText")) {
+                window.parent.postMessage(JSON.stringify({"type": "toDart: getSelectedText", "text": window.getSelection().toString()}), "*");
+              }
+              $userScripts
+            }
+          }
+        }
+        
+        function onSelectionChange() {
+          let {anchorNode, anchorOffset, focusNode, focusOffset} = document.getSelection();
+          var isBold = false;
+          var isItalic = false;
+          var isUnderline = false;
+          var isStrikethrough = false;
+          var isSuperscript = false;
+          var isSubscript = false;
+          var isUL = false;
+          var isOL = false;
+          var isLeft = false;
+          var isRight = false;
+          var isCenter = false;
+          var isFull = false;
+          var parent;
+          var fontName;
+          var fontSize = 16;
+          var foreColor = "000000";
+          var backColor = "FFFF00";
+          var focusNode2 = \$(window.getSelection().focusNode);
+          var parentList = focusNode2.closest("div.note-editable ol, div.note-editable ul");
+          var parentListType = parentList.css('list-style-type');
+          var lineHeight = \$(focusNode.parentNode).css('line-height');
+          var direction = \$(focusNode.parentNode).css('direction');
+          if (document.queryCommandState) {
+            isBold = document.queryCommandState('bold');
+            isItalic = document.queryCommandState('italic');
+            isUnderline = document.queryCommandState('underline');
+            isStrikethrough = document.queryCommandState('strikeThrough');
+            isSuperscript = document.queryCommandState('superscript');
+            isSubscript = document.queryCommandState('subscript');
+            isUL = document.queryCommandState('insertUnorderedList');
+            isOL = document.queryCommandState('insertOrderedList');
+            isLeft = document.queryCommandState('justifyLeft');
+            isRight = document.queryCommandState('justifyRight');
+            isCenter = document.queryCommandState('justifyCenter');
+            isFull = document.queryCommandState('justifyFull');
+          }
+          if (document.queryCommandValue) {
+            parent = document.queryCommandValue('formatBlock');
+            fontSize = document.queryCommandValue('fontSize');
+            foreColor = document.queryCommandValue('foreColor');
+            backColor = document.queryCommandValue('hiliteColor');
+            fontName = document.queryCommandValue('fontName');
+          }
+          var message = {
+            'view': "$createdViewId", 
+            'type': "toDart: updateToolbar",
+            'style': parent,
+            'fontName': fontName,
+            'fontSize': fontSize,
+            'font': [isBold, isItalic, isUnderline],
+            'miscFont': [isStrikethrough, isSuperscript, isSubscript],
+            'color': [foreColor, backColor],
+            'paragraph': [isUL, isOL],
+            'listStyle': parentListType,
+            'align': [isLeft, isCenter, isRight, isFull],
+            'lineHeight': lineHeight,
+            'direction': direction,
+          };
+          window.parent.postMessage(JSON.stringify(message), "*");
+        }
+        
+        $jsCallbacks
+      </script>
+    """;
+    var summernoteScriptsAutoHeight = """
+      <script type="text/javascript">
+        \$(document).ready(function () {
+          \$('#summernote-2').summernote({
+            placeholder: "${widget.htmlEditorOptions.hint}",
+            tabsize: 2,
+            disableGrammar: false,
+            spellCheck: ${widget.htmlEditorOptions.spellCheck},
+            maximumFileSize: $maximumFileSize,
+            ${widget.htmlEditorOptions.customOptions}
+            $summernoteCallbacks
+          });
+          
+          \$('#summernote-2').on('summernote.change', function(_, contents, \$editable) {
+            window.parent.postMessage(JSON.stringify({"view": "$createdViewId", "type": "toDart: onChangeContent", "contents": contents}), "*");
+          });
+        });
+       
+        window.parent.addEventListener('message', handleMessage, false);
+        document.onselectionchange = onSelectionChange;
+      
+        function handleMessage(e) {
+          if (e && e.data && e.data.includes("toIframe:")) {
+            var data = JSON.parse(e.data);
+            if (data["view"].includes("$createdViewId")) {
+              if (data["type"].includes("getText")) {
+                var str = \$('#summernote-2').summernote('code');
+                window.parent.postMessage(JSON.stringify({"type": "toDart: getText", "text": str}), "*");
+              }
+              if (data["type"].includes("getHeight")) {
+                var height = document.body.scrollHeight;
+                window.parent.postMessage(JSON.stringify({"view": "$createdViewId", "type": "toDart: htmlHeight", "height": height}), "*");
+              }
+              if (data["type"].includes("setInputType")) {
+                document.getElementsByClassName('note-editable')[0].setAttribute('inputmode', '${widget.htmlEditorOptions.inputType.name}');
+              }
+              if (data["type"].includes("setText")) {
+                \$('#summernote-2').summernote('code', data["text"]);
+              }
+              if (data["type"].includes("setFullScreen")) {
+                \$("#summernote-2").summernote("fullscreen.toggle");
+              }
+              if (data["type"].includes("setFocus")) {
+                \$('#summernote-2').summernote('focus');
+              }
+              if (data["type"].includes("clear")) {
+                \$('#summernote-2').summernote('reset');
+              }
+              if (data["type"].includes("setHint")) {
+                \$(".note-placeholder").html(data["text"]);
+              }
+              if (data["type"].includes("toggleCodeview")) {
+                \$('#summernote-2').summernote('codeview.toggle');
+              }
+              if (data["type"].includes("disable")) {
+                \$('#summernote-2').summernote('disable');
+              }
+              if (data["type"].includes("enable")) {
+                \$('#summernote-2').summernote('enable');
+              }
+              if (data["type"].includes("undo")) {
+                \$('#summernote-2').summernote('undo');
+              }
+              if (data["type"].includes("redo")) {
+                \$('#summernote-2').summernote('redo');
+              }
+              if (data["type"].includes("insertText")) {
+                \$('#summernote-2').summernote('insertText', data["text"]);
+              }
+              if (data["type"].includes("insertHtml")) {
+                \$('#summernote-2').summernote('pasteHTML', data["html"]);
+              }
+              if (data["type"].includes("insertNetworkImage")) {
+                \$('#summernote-2').summernote('insertImage', data["url"], data["filename"]);
+              }
+              if (data["type"].includes("insertLink")) {
+                \$('#summernote-2').summernote('createLink', {
+                  text: data["text"],
+                  url: data["url"],
+                  isNewWindow: data["isNewWindow"]
+                });
+              }
+              if (data["type"].includes("reload")) {
+                window.location.reload();
+              }
+              if (data["type"].includes("addNotification")) {
+                if (data["alertType"] === null) {
+                  \$('.note-status-output').html(
+                    data["html"]
+                  );
+                } else {
+                  \$('.note-status-output').html(
+                    '<div class="' + data["alertType"] + '">' +
+                      data["html"] +
+                    '</div>'
+                  );
+                }
+              }
+              if (data["type"].includes("removeNotification")) {
+                \$('.note-status-output').empty();
+              }
+              if (data["type"].includes("execCommand")) {
+                if (data["argument"] === null) {
+                  document.execCommand(data["command"], false);
+                } else {
+                  document.execCommand(data["command"], false, data["argument"]);
+                }
+              }
+              if (data["type"].includes("changeListStyle")) {
+                var \$focusNode = \$(window.getSelection().focusNode);
+                var \$parentList = \$focusNode.closest("div.note-editable ol, div.note-editable ul");
+                \$parentList.css("list-style-type", data["changed"]);
+              }
+              if (data["type"].includes("changeLineHeight")) {
+                \$('#summernote-2').summernote('lineHeight', data["changed"]);
+              }
+              if (data["type"].includes("changeTextDirection")) {
+                var s=document.getSelection();			
+                if(s==''){
+                    document.execCommand("insertHTML", false, "<p dir='"+data['direction']+"'></p>");
+                }else{
+                    document.execCommand("insertHTML", false, "<div dir='"+data['direction']+"'>"+ document.getSelection()+"</div>");
+                }
+              }
+              if (data["type"].includes("changeCase")) {
+                var selected = \$('#summernote-2').summernote('createRange');
+                  if(selected.toString()){
+                      var texto;
+                      var count = 0;
+                      var value = data["case"];
                       var nodes = selected.nodes();
                       for (var i=0; i< nodes.length; ++i) {
                           if (nodes[i].nodeName == "#text") {
@@ -455,7 +691,9 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
     htmlString = htmlString
         .replaceFirst('<!--darkCSS-->', darkCSS)
         .replaceFirst('<!--headString-->', headString)
-        .replaceFirst('<!--summernoteScripts-->', summernoteScripts)
+        .replaceFirst('<!--summernoteScripts-->', widget.htmlEditorOptions.disabled
+        && widget.htmlEditorOptions.useAutoExpand
+        ? summernoteScriptsAutoHeight : summernoteScripts)
         .replaceFirst('"jquery.min.js"',
             '"assets/packages/html_editor_enhanced/assets/jquery.min.js"')
         .replaceFirst('"summernote-lite.min.css"',
@@ -702,31 +940,31 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
           data['type'].contains('toDart:') &&
           data['view'] == createdViewId) {
         if (data['type'].contains('onBeforeCommand')) {
-          c.onBeforeCommand!.call(data['contents']);
+          c.onBeforeCommand?.call(data['contents']);
         }
         if (data['type'].contains('onChangeContent')) {
-          c.onChangeContent!.call(data['contents']);
+          c.onChangeContent?.call(data['contents']);
         }
         if (data['type'].contains('onChangeCodeview')) {
-          c.onChangeCodeview!.call(data['contents']);
+          c.onChangeCodeview?.call(data['contents']);
         }
         if (data['type'].contains('onDialogShown')) {
-          c.onDialogShown!.call();
+          c.onDialogShown?.call();
         }
         if (data['type'].contains('onEnter')) {
-          c.onEnter!.call();
+          c.onEnter?.call();
         }
         if (data['type'].contains('onFocus')) {
-          c.onFocus!.call();
+          c.onFocus?.call();
         }
         if (data['type'].contains('onBlur')) {
-          c.onBlur!.call();
+          c.onBlur?.call();
         }
         if (data['type'].contains('onBlurCodeview')) {
-          c.onBlurCodeview!.call();
+          c.onBlurCodeview?.call();
         }
         if (data['type'].contains('onImageLinkInsert')) {
-          c.onImageLinkInsert!.call(data['url']);
+          c.onImageLinkInsert?.call(data['url']);
         }
         if (data['type'].contains('onImageUpload')) {
           var map = <String, dynamic>{
@@ -739,11 +977,11 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
           };
           var jsonStr = json.encode(map);
           var file = fileUploadFromJson(jsonStr);
-          c.onImageUpload!.call(file);
+          c.onImageUpload?.call(file);
         }
         if (data['type'].contains('onImageUploadError')) {
           if (data['base64'] != null) {
-            c.onImageUploadError!.call(
+            c.onImageUploadError?.call(
                 null,
                 data['base64'],
                 data['error'].contains('base64')
@@ -761,7 +999,7 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
             };
             var jsonStr = json.encode(map);
             var file = fileUploadFromJson(jsonStr);
-            c.onImageUploadError!.call(
+            c.onImageUploadError?.call(
                 file,
                 null,
                 data['error'].contains('base64')
@@ -772,22 +1010,22 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
           }
         }
         if (data['type'].contains('onKeyDown')) {
-          c.onKeyDown!.call(data['keyCode']);
+          c.onKeyDown?.call(data['keyCode']);
         }
         if (data['type'].contains('onKeyUp')) {
-          c.onKeyUp!.call(data['keyCode']);
+          c.onKeyUp?.call(data['keyCode']);
         }
         if (data['type'].contains('onMouseDown')) {
-          c.onMouseDown!.call();
+          c.onMouseDown?.call();
         }
         if (data['type'].contains('onMouseUp')) {
-          c.onMouseUp!.call();
+          c.onMouseUp?.call();
         }
         if (data['type'].contains('onPaste')) {
-          c.onPaste!.call();
+          c.onPaste?.call();
         }
         if (data['type'].contains('onScroll')) {
-          c.onScroll!.call();
+          c.onScroll?.call();
         }
         if (data['type'].contains('characterCount')) {
           widget.controller.characterCount = data['totalChars'];
