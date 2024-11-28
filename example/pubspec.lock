@@ -190,7 +190,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "2.5.21"
+    version: "2.5.22"
   infinite_listview:
     dependency: transitive
     description:

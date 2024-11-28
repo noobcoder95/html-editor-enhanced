@@ -1466,3 +1466,8 @@ a.note-dropdown-item,a.note-dropdown-item:hover {
   margin-bottom: 5px;
   display: inline-block;
 }
+
+.note-editor .note-editing-area .note-editable {
+  /* ... other styles ... */
+  overflow: hidden; /* Prevent vertical scrolling */
+}
