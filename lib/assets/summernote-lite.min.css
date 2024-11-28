@@ -930,15 +930,23 @@ a.note-dropdown-item,a.note-dropdown-item:hover {
 }
 
 .note-editor.note-airframe .note-editing-area,.note-editor.note-frame .note-editing-area {
-  overflow: hidden;
-  scrollbar-width: none; /* Hide scrollbar */
+  overflow-y: scroll;
+  scrollbar-width: none;
+  /* Vendor-specific prefixes */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+  -webkit-overflow-scrolling: touch; /* iOS and Android */
 }
 
 .note-editor.note-airframe .note-editing-area .note-editable,.note-editor.note-frame .note-editing-area .note-editable {
   padding: 10px;
-  overflow: auto;
-  scrollbar-width: none; /* Hide scrollbar */
   word-wrap: break-word;
+  overflow-y: scroll;
+  scrollbar-width: none;
+  /* Vendor-specific prefixes */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+  -webkit-overflow-scrolling: touch; /* iOS and Android */
 }
 
 .note-editor.note-airframe .note-editing-area .note-editable[contenteditable=false],.note-editor.note-frame .note-editing-area .note-editable[contenteditable=false] {
