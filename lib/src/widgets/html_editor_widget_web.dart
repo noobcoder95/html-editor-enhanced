@@ -730,10 +730,6 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
         var jsonStr2 = jsonEncoder.convert(data2);
         html.window.onMessage.listen((event) {
           var data = event.data is String ? json.decode(event.data) : event.data;
-          if(!(event.data is String)) {
-            print(event.data.runtimeType);
-            print(event.data.toString());
-          }
           if (data['type'] != null &&
               data['type'].contains('toDart: htmlHeight') &&
               data['view'] == createdViewId &&
