@@ -486,7 +486,7 @@ class ToolbarWidgetState extends State<ToolbarWidget> {
                           color: Theme.of(context)
                               .colorScheme
                               .onSurface
-                              .withOpacity(0.12))),
+                              .withValues(alpha: 0.12))),
           child: CustomDropdownButtonHideUnderline(
             child: CustomDropdownButton<String>(
               elevation: widget.htmlToolbarOptions.dropdownElevation,
@@ -618,7 +618,7 @@ class ToolbarWidgetState extends State<ToolbarWidget> {
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSurface
-                                .withOpacity(0.12))),
+                                .withValues(alpha: 0.12))),
             child: CustomDropdownButtonHideUnderline(
               child: CustomDropdownButton<String>(
                 elevation: widget.htmlToolbarOptions.dropdownElevation,
@@ -700,7 +700,7 @@ class ToolbarWidgetState extends State<ToolbarWidget> {
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSurface
-                                .withOpacity(0.12))),
+                                .withValues(alpha: 0.12))),
             child: CustomDropdownButtonHideUnderline(
               child: CustomDropdownButton<double>(
                 elevation: widget.htmlToolbarOptions.dropdownElevation,
@@ -830,7 +830,7 @@ class ToolbarWidgetState extends State<ToolbarWidget> {
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSurface
-                                .withOpacity(0.12))),
+                                .withValues(alpha: 0.12))),
             child: CustomDropdownButtonHideUnderline(
               child: CustomDropdownButton<String>(
                 elevation: widget.htmlToolbarOptions.dropdownElevation,
@@ -1065,7 +1065,7 @@ class ToolbarWidgetState extends State<ToolbarWidget> {
                     true;
                 if (proceed) {
                   widget.controller.execCommand('foreColor',
-                      argument: (Colors.black.value & 0xFFFFFF)
+                      argument: (Colors.black.value32bit & 0xFFFFFF)
                           .toRadixString(16)
                           .padLeft(6, '0')
                           .toUpperCase());
@@ -1079,7 +1079,7 @@ class ToolbarWidgetState extends State<ToolbarWidget> {
                     true;
                 if (proceed) {
                   widget.controller.execCommand('hiliteColor',
-                      argument: (Colors.yellow.value & 0xFFFFFF)
+                      argument: (Colors.yellow.value32bit & 0xFFFFFF)
                           .toRadixString(16)
                           .padLeft(6, '0')
                           .toUpperCase());
@@ -1180,7 +1180,7 @@ class ToolbarWidgetState extends State<ToolbarWidget> {
                                 if (t.getIcons()[index].icon ==
                                     Icons.format_color_text) {
                                   widget.controller.execCommand('foreColor',
-                                      argument: (newColor.value & 0xFFFFFF)
+                                      argument: (newColor.value32bit & 0xFFFFFF)
                                           .toRadixString(16)
                                           .padLeft(6, '0')
                                           .toUpperCase());
@@ -1191,7 +1191,7 @@ class ToolbarWidgetState extends State<ToolbarWidget> {
                                 if (t.getIcons()[index].icon ==
                                     Icons.format_color_fill) {
                                   widget.controller.execCommand('hiliteColor',
-                                      argument: (newColor.value & 0xFFFFFF)
+                                      argument: (newColor.value32bit & 0xFFFFFF)
                                           .toRadixString(16)
                                           .padLeft(6, '0')
                                           .toUpperCase());
@@ -1284,7 +1284,7 @@ class ToolbarWidgetState extends State<ToolbarWidget> {
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSurface
-                                .withOpacity(0.12))),
+                                .withValues(alpha: 0.12))),
             child: CustomDropdownButtonHideUnderline(
               child: CustomDropdownButton<String>(
                 elevation: widget.htmlToolbarOptions.dropdownElevation,
@@ -1506,7 +1506,7 @@ class ToolbarWidgetState extends State<ToolbarWidget> {
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSurface
-                                .withOpacity(0.12))),
+                                .withValues(alpha: 0.12))),
             child: CustomDropdownButtonHideUnderline(
               child: CustomDropdownButton<double>(
                 elevation: widget.htmlToolbarOptions.dropdownElevation,
@@ -1662,7 +1662,7 @@ class ToolbarWidgetState extends State<ToolbarWidget> {
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSurface
-                                .withOpacity(0.12))),
+                                .withValues(alpha: 0.12))),
             child: CustomDropdownButtonHideUnderline(
               child: CustomDropdownButton<String>(
                 elevation: widget.htmlToolbarOptions.dropdownElevation,
