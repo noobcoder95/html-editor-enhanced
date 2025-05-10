@@ -934,100 +934,102 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
   /// Adds an event listener to check when a callback is fired
   void addJSListener(Callbacks c) {
     html.window.onMessage.listen((event) {
-      var data = json.decode(event.data);
-      if (data['type'] != null &&
-          data['type'].contains('toDart:') &&
-          data['view'] == createdViewId) {
-        if (data['type'].contains('onBeforeCommand')) {
-          c.onBeforeCommand?.call(data['contents']);
-        }
-        if (data['type'].contains('onChangeContent')) {
-          c.onChangeContent?.call(data['contents']);
-        }
-        if (data['type'].contains('onChangeCodeview')) {
-          c.onChangeCodeview?.call(data['contents']);
-        }
-        if (data['type'].contains('onDialogShown')) {
-          c.onDialogShown?.call();
-        }
-        if (data['type'].contains('onEnter')) {
-          c.onEnter?.call();
-        }
-        if (data['type'].contains('onFocus')) {
-          c.onFocus?.call();
-        }
-        if (data['type'].contains('onBlur')) {
-          c.onBlur?.call();
-        }
-        if (data['type'].contains('onBlurCodeview')) {
-          c.onBlurCodeview?.call();
-        }
-        if (data['type'].contains('onImageLinkInsert')) {
-          c.onImageLinkInsert?.call(data['url']);
-        }
-        if (data['type'].contains('onImageUpload')) {
-          var map = <String, dynamic>{
-            'lastModified': data['lastModified'],
-            'lastModifiedDate': data['lastModifiedDate'],
-            'name': data['name'],
-            'size': data['size'],
-            'type': data['mimeType'],
-            'base64': data['base64']
-          };
-          var jsonStr = json.encode(map);
-          var file = fileUploadFromJson(jsonStr);
-          c.onImageUpload?.call(file);
-        }
-        if (data['type'].contains('onImageUploadError')) {
-          if (data['base64'] != null) {
-            c.onImageUploadError?.call(
-                null,
-                data['base64'],
-                data['error'].contains('base64')
-                    ? UploadError.jsException
-                    : data['error'].contains('unsupported')
-                        ? UploadError.unsupportedFile
-                        : UploadError.exceededMaxSize);
-          } else {
+      if(event.data is String) {
+        var data = json.decode(event.data);
+        if (data['type'] != null &&
+            data['type'].contains('toDart:') &&
+            data['view'] == createdViewId) {
+          if (data['type'].contains('onBeforeCommand')) {
+            c.onBeforeCommand?.call(data['contents']);
+          }
+          if (data['type'].contains('onChangeContent')) {
+            c.onChangeContent?.call(data['contents']);
+          }
+          if (data['type'].contains('onChangeCodeview')) {
+            c.onChangeCodeview?.call(data['contents']);
+          }
+          if (data['type'].contains('onDialogShown')) {
+            c.onDialogShown?.call();
+          }
+          if (data['type'].contains('onEnter')) {
+            c.onEnter?.call();
+          }
+          if (data['type'].contains('onFocus')) {
+            c.onFocus?.call();
+          }
+          if (data['type'].contains('onBlur')) {
+            c.onBlur?.call();
+          }
+          if (data['type'].contains('onBlurCodeview')) {
+            c.onBlurCodeview?.call();
+          }
+          if (data['type'].contains('onImageLinkInsert')) {
+            c.onImageLinkInsert?.call(data['url']);
+          }
+          if (data['type'].contains('onImageUpload')) {
             var map = <String, dynamic>{
               'lastModified': data['lastModified'],
               'lastModifiedDate': data['lastModifiedDate'],
               'name': data['name'],
               'size': data['size'],
-              'type': data['mimeType']
+              'type': data['mimeType'],
+              'base64': data['base64']
             };
             var jsonStr = json.encode(map);
             var file = fileUploadFromJson(jsonStr);
-            c.onImageUploadError?.call(
-                file,
-                null,
-                data['error'].contains('base64')
-                    ? UploadError.jsException
-                    : data['error'].contains('unsupported')
-                        ? UploadError.unsupportedFile
-                        : UploadError.exceededMaxSize);
+            c.onImageUpload?.call(file);
           }
-        }
-        if (data['type'].contains('onKeyDown')) {
-          c.onKeyDown?.call(data['keyCode']);
-        }
-        if (data['type'].contains('onKeyUp')) {
-          c.onKeyUp?.call(data['keyCode']);
-        }
-        if (data['type'].contains('onMouseDown')) {
-          c.onMouseDown?.call();
-        }
-        if (data['type'].contains('onMouseUp')) {
-          c.onMouseUp?.call();
-        }
-        if (data['type'].contains('onPaste')) {
-          c.onPaste?.call();
-        }
-        if (data['type'].contains('onScroll')) {
-          c.onScroll?.call();
-        }
-        if (data['type'].contains('characterCount')) {
-          widget.controller.characterCount = data['totalChars'];
+          if (data['type'].contains('onImageUploadError')) {
+            if (data['base64'] != null) {
+              c.onImageUploadError?.call(
+                  null,
+                  data['base64'],
+                  data['error'].contains('base64')
+                      ? UploadError.jsException
+                      : data['error'].contains('unsupported')
+                      ? UploadError.unsupportedFile
+                      : UploadError.exceededMaxSize);
+            } else {
+              var map = <String, dynamic>{
+                'lastModified': data['lastModified'],
+                'lastModifiedDate': data['lastModifiedDate'],
+                'name': data['name'],
+                'size': data['size'],
+                'type': data['mimeType']
+              };
+              var jsonStr = json.encode(map);
+              var file = fileUploadFromJson(jsonStr);
+              c.onImageUploadError?.call(
+                  file,
+                  null,
+                  data['error'].contains('base64')
+                      ? UploadError.jsException
+                      : data['error'].contains('unsupported')
+                      ? UploadError.unsupportedFile
+                      : UploadError.exceededMaxSize);
+            }
+          }
+          if (data['type'].contains('onKeyDown')) {
+            c.onKeyDown?.call(data['keyCode']);
+          }
+          if (data['type'].contains('onKeyUp')) {
+            c.onKeyUp?.call(data['keyCode']);
+          }
+          if (data['type'].contains('onMouseDown')) {
+            c.onMouseDown?.call();
+          }
+          if (data['type'].contains('onMouseUp')) {
+            c.onMouseUp?.call();
+          }
+          if (data['type'].contains('onPaste')) {
+            c.onPaste?.call();
+          }
+          if (data['type'].contains('onScroll')) {
+            c.onScroll?.call();
+          }
+          if (data['type'].contains('characterCount')) {
+            widget.controller.characterCount = data['totalChars'];
+          }
         }
       }
     });
