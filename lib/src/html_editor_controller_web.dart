@@ -1,11 +1,14 @@
+import 'dart:async'; // Added for Completer
 import 'dart:convert';
+import 'dart:js_interop';
 // ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
+// import 'dart:html' as html; // REMOVED
+import 'package:web/web.dart' as web; // ADDED - using 'web' alias for clarity
 
 import 'package:flutter/foundation.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
 import 'package:html_editor_enhanced/src/html_editor_controller_unsupported.dart'
-    as unsupported;
+as unsupported;
 import 'package:meta/meta.dart';
 
 /// Controller for web
@@ -51,13 +54,43 @@ class HtmlEditorController extends unsupported.HtmlEditorController {
   @internal
   set viewId(String? viewId) => _viewId = viewId;
 
+  // Helper for listening to specific window messages
+  Future<web.MessageEvent> _listenForMessage(String expectedType) {
+    final completer = Completer<web.MessageEvent>();
+    // Declare listener function so it can be removed
+    late void Function(web.Event) messageListener;
+
+    messageListener = (web.Event event) {
+      if (event is web.MessageEvent) {
+        try {
+          // event.data could be any type, ensure it's a string for json.decode
+          final String dataString = event.data.toString();
+          final decodedData = json.decode(dataString);
+          if (decodedData is Map && decodedData['type'] == expectedType) {
+            web.window.removeEventListener('message', messageListener.toJS);
+            completer.complete(event);
+          }
+        } catch (e) {
+          // Handle cases where data is not JSON or not the expected format
+          if (kDebugMode) {
+            print('Error decoding message or unexpected message format: $e');
+          }
+          // Optionally, if an error here means we should stop listening:
+          // web.window.removeEventListener('message', messageListener.toJS);
+          // completer.completeError(e);
+        }
+      }
+    };
+    web.window.addEventListener('message', messageListener.toJS);
+    return completer.future;
+  }
+
   /// Gets the text from the editor and returns it as a [String].
   @override
   Future<String> getText() async {
     _evaluateJavascriptWeb(data: {'type': 'toIframe: getText'});
-    var e = await html.window.onMessage.firstWhere(
-        (element) => json.decode(element.data)['type'] == 'toDart: getText');
-    String text = json.decode(e.data)['text'];
+    var e = await _listenForMessage('toDart: getText');
+    String text = json.decode(e.data.toString())['text']; // Ensure e.data is string
     if (processOutputHtml &&
         (text.isEmpty ||
             text == '<p></p>' ||
@@ -73,9 +106,8 @@ class HtmlEditorController extends unsupported.HtmlEditorController {
     } else {
       _evaluateJavascriptWeb(data: {'type': 'toIframe: getSelectedText'});
     }
-    var e = await html.window.onMessage.firstWhere((element) =>
-        json.decode(element.data)['type'] == 'toDart: getSelectedText');
-    return json.decode(e.data)['text'];
+    var e = await _listenForMessage('toDart: getSelectedText');
+    return json.decode(e.data.toString())['text']; // Ensure e.data is string
   }
 
   /// Sets the text of the editor. Some pre-processing is applied to convert
@@ -233,9 +265,8 @@ class HtmlEditorController extends unsupported.HtmlEditorController {
       {bool hasReturnValue = false}) async {
     _evaluateJavascriptWeb(data: {'type': 'toIframe: $name'});
     if (hasReturnValue) {
-      var e = await html.window.onMessage.firstWhere(
-          (element) => json.decode(element.data)['type'] == 'toDart: $name');
-      return json.decode(e.data);
+      var e = await _listenForMessage('toDart: $name');
+      return json.decode(e.data.toString()); // Ensure e.data is string
     }
   }
 
@@ -302,16 +333,17 @@ class HtmlEditorController extends unsupported.HtmlEditorController {
   }
 
   /// Helper function to process input html
-  String _processHtml({required html}) {
+  String _processHtml({required String html}) { // Changed dynamic to String for html param
+    String processedHtml = html;
     if (processInputHtml) {
-      html = html.replaceAll('\r', '').replaceAll('\r\n', '');
+      processedHtml = processedHtml.replaceAll('\r', '').replaceAll('\r\n', '');
     }
     if (processNewLineAsBr) {
-      html = html.replaceAll('\n', '<br/>').replaceAll('\n\n', '<br/>');
+      processedHtml = processedHtml.replaceAll('\n', '<br/>').replaceAll('\n\n', '<br/>');
     } else {
-      html = html.replaceAll('\n', '').replaceAll('\n\n', '');
+      processedHtml = processedHtml.replaceAll('\n', '').replaceAll('\n\n', '');
     }
-    return html;
+    return processedHtml;
   }
 
   /// Helper function to run javascript and check current environment
@@ -319,8 +351,8 @@ class HtmlEditorController extends unsupported.HtmlEditorController {
     if (kIsWeb) {
       data['view'] = _viewId;
       final jsonEncoder = JsonEncoder();
-      var json = jsonEncoder.convert(data);
-      html.window.postMessage(json, '*');
+      var jsonData = jsonEncoder.convert(data); // Renamed from 'json' to 'jsonData' to avoid conflict
+      web.window.postMessage(jsonData.toJS, '*'.toJS); // Use global window, jsonData is already a string
     } else {
       throw Exception(
           'Non-Flutter Web environment detected, please make sure you are importing package:html_editor_enhanced/html_editor.dart');

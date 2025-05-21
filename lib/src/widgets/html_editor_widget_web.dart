@@ -1,14 +1,15 @@
-export 'dart:html';
-
 import 'dart:convert';
+import 'dart:js_interop';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
 import 'package:html_editor_enhanced/utils/utils.dart';
 // ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
-import 'package:html_editor_enhanced/utils/shims/dart_ui.dart' as ui;
+// import 'dart:html' as html; // REMOVED
+import 'package:web/web.dart' as web; // ADDED
+import 'dart:ui_web' as ui;
 
 /// The HTML Editor widget itself, for web (uses IFrameElement)
 class HtmlEditorWidget extends StatefulWidget {
@@ -60,12 +61,174 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
 
   @override
   void initState() {
+    super.initState();
     actualHeight = widget.otherOptions.height;
     createdViewId = getRandString(10);
     widget.controller.viewId = createdViewId;
+    // Assign the master message handler once.
+    // It's important this is done before the iframe loads and starts posting messages.
+    web.window.onmessage = _masterMessageHandler.toJS;
     initSummernote();
-    super.initState();
   }
+
+  void _masterMessageHandler(web.Event e) {
+    if (e is! web.MessageEvent) return;
+    final web.MessageEvent event = e;
+
+    if (event.data == null) return;
+
+    // Ensure data is a string before attempting to decode JSON
+    final String rawData = event.data.toString();
+    dynamic jsonData;
+    try {
+      jsonData = json.decode(rawData);
+    } catch (error) {
+      if (kDebugMode) {
+        print('HTML Editor Web: Failed to decode message data: $rawData. Error: $error');
+      }
+      return;
+    }
+
+    if (jsonData is! Map || jsonData['view'] != createdViewId || jsonData['type'] == null) {
+      return;
+    }
+
+    final Map<String, dynamic> data = jsonData as Map<String, dynamic>;
+    final String type = data['type'] as String;
+
+    // --- Callbacks from SummernoteAtMention plugin ---
+    if (type.contains('toDart: onSelectMention')) {
+      for (var p in widget.plugins) {
+        if (p is SummernoteAtMention && p.onSelect != null) {
+          p.onSelect!.call(data['value']);
+          // If multiple mention plugins, this will call all of them.
+          // Consider if only one should respond or if a more specific ID is needed.
+        }
+      }
+    }
+
+    // --- Callbacks originally in iframe.onLoad's listener ---
+    if (type.contains('toDart: htmlHeight') &&
+        widget.htmlEditorOptions.autoAdjustHeight) {
+      final docHeight = data['height'] ?? actualHeight;
+      if ((docHeight != null && docHeight != actualHeight) &&
+          mounted &&
+          docHeight > 0) {
+        setState(mounted, this.setState, () {
+          actualHeight =
+              docHeight + (toolbarKey.currentContext?.size?.height ?? 0);
+        });
+      }
+    }
+    if (type.contains('toDart: onChangeContent')) {
+      widget.callbacks?.onChangeContent?.call(data['contents']);
+      if (mounted && widget.htmlEditorOptions.shouldEnsureVisible) { // check mounted before accessing context
+        Scrollable.maybeOf(context)?.position.ensureVisible(
+            context.findRenderObject()!,
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeIn);
+      }
+    }
+    if (type.contains('toDart: updateToolbar')) {
+      if (widget.controller.toolbar != null) {
+        widget.controller.toolbar!.updateToolbar(data);
+      }
+    }
+
+    // --- General Callbacks (previously in addJSListener) ---
+    if (widget.callbacks != null) {
+      if (type.contains('onBeforeCommand')) {
+        widget.callbacks!.onBeforeCommand?.call(data['contents']);
+      }
+      // Note: onChangeContent is handled above
+      if (type.contains('onChangeCodeview')) {
+        widget.callbacks!.onChangeCodeview?.call(data['contents']);
+      }
+      if (type.contains('onDialogShown')) {
+        widget.callbacks!.onDialogShown?.call();
+      }
+      if (type.contains('onEnter')) {
+        widget.callbacks!.onEnter?.call();
+      }
+      if (type.contains('onFocus')) {
+        widget.callbacks!.onFocus?.call();
+      }
+      if (type.contains('onBlur')) {
+        widget.callbacks!.onBlur?.call();
+      }
+      if (type.contains('onBlurCodeview')) {
+        widget.callbacks!.onBlurCodeview?.call();
+      }
+      if (type.contains('onImageLinkInsert')) {
+        widget.callbacks!.onImageLinkInsert?.call(data['url']);
+      }
+      if (type.contains('onImageUpload')) {
+        var map = <String, dynamic>{
+          'lastModified': data['lastModified'],
+          'lastModifiedDate': data['lastModifiedDate'],
+          'name': data['name'],
+          'size': data['size'],
+          'type': data['mimeType'],
+          'base64': data['base64']
+        };
+        var jsonStr = json.encode(map);
+        var file = fileUploadFromJson(jsonStr);
+        widget.callbacks!.onImageUpload?.call(file);
+      }
+      if (type.contains('onImageUploadError')) {
+        if (data['base64'] != null) {
+          widget.callbacks!.onImageUploadError?.call(
+              null,
+              data['base64'],
+              data['error'].contains('base64')
+                  ? UploadError.jsException
+                  : data['error'].contains('unsupported')
+                  ? UploadError.unsupportedFile
+                  : UploadError.exceededMaxSize);
+        } else {
+          var map = <String, dynamic>{
+            'lastModified': data['lastModified'],
+            'lastModifiedDate': data['lastModifiedDate'],
+            'name': data['name'],
+            'size': data['size'],
+            'type': data['mimeType']
+          };
+          var jsonStr = json.encode(map);
+          var file = fileUploadFromJson(jsonStr);
+          widget.callbacks!.onImageUploadError?.call(
+              file,
+              null,
+              data['error'].contains('base64')
+                  ? UploadError.jsException
+                  : data['error'].contains('unsupported')
+                  ? UploadError.unsupportedFile
+                  : UploadError.exceededMaxSize);
+        }
+      }
+      if (type.contains('onKeyDown')) {
+        widget.callbacks!.onKeyDown?.call(data['keyCode']);
+      }
+      if (type.contains('onKeyUp')) {
+        widget.callbacks!.onKeyUp?.call(data['keyCode']);
+      }
+      if (type.contains('onMouseDown')) {
+        widget.callbacks!.onMouseDown?.call();
+      }
+      if (type.contains('onMouseUp')) {
+        widget.callbacks!.onMouseUp?.call();
+      }
+      if (type.contains('onPaste')) {
+        widget.callbacks!.onPaste?.call();
+      }
+      if (type.contains('onScroll')) {
+        widget.callbacks!.onScroll?.call();
+      }
+    }
+    if (type.contains('characterCount')) {
+      widget.controller.characterCount = data['totalChars'];
+    }
+  }
+
 
   void initSummernote() async {
     var headString = '';
@@ -112,17 +275,7 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
               },
             },
           ''';
-        if (p.onSelect != null) {
-          html.window.onMessage.listen((event) {
-            var data = json.decode(event.data);
-            if (data['type'] != null &&
-                data['type'].contains('toDart:') &&
-                data['view'] == createdViewId &&
-                data['type'].contains('onSelectMention')) {
-              p.onSelect!.call(data['value']);
-            }
-          });
-        }
+        // The listener for onSelectMention is now part of _masterMessageHandler
       }
     }
     if (widget.callbacks != null) {
@@ -142,25 +295,9 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
             var base64 = "<an error occurred>";
             reader.onload = function (_) {
               base64 = reader.result;
-              var newObject = {
-                 'lastModified': files[0].lastModified,
-                 'lastModifiedDate': files[0].lastModifiedDate,
-                 'name': files[0].name,
-                 'size': files[0].size,
-                 'type': files[0].type,
-                 'base64': base64
-              };
               window.parent.postMessage(JSON.stringify({"view": "$createdViewId", "type": "toDart: onImageUpload", "lastModified": files[0].lastModified, "lastModifiedDate": files[0].lastModifiedDate, "name": files[0].name, "size": files[0].size, "mimeType": files[0].type, "base64": base64}), "*");
             };
             reader.onerror = function (_) {
-              var newObject = {
-                 'lastModified': files[0].lastModified,
-                 'lastModifiedDate': files[0].lastModifiedDate,
-                 'name': files[0].name,
-                 'size': files[0].size,
-                 'type': files[0].type,
-                 'base64': base64
-              };
               window.parent.postMessage(JSON.stringify({"view": "$createdViewId", "type": "toDart: onImageUpload", "lastModified": files[0].lastModified, "lastModifiedDate": files[0].lastModifiedDate, "name": files[0].name, "size": files[0].size, "mimeType": files[0].type, "base64": base64}), "*");
             };
             reader.readAsDataURL(files[0]);
@@ -182,11 +319,12 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
     }
     summernoteCallbacks = summernoteCallbacks + '}';
     var darkCSS = '';
-    if ((Theme.of(widget.initBC).brightness == Brightness.dark ||
-            widget.htmlEditorOptions.darkMode == true) &&
+    // Check mounted before accessing Theme.of
+    if (mounted && (Theme.of(widget.initBC).brightness == Brightness.dark ||
+        widget.htmlEditorOptions.darkMode == true) &&
         widget.htmlEditorOptions.darkMode != false) {
       darkCSS =
-          '<link href=\"assets/packages/html_editor_enhanced/assets/summernote-lite-dark.css\" rel=\"stylesheet\">';
+      '<link href=\"assets/packages/html_editor_enhanced/assets/summernote-lite-dark.css\" rel=\"stylesheet\">';
     }
     var jsCallbacks = '';
     if (widget.callbacks != null) {
@@ -204,6 +342,7 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
             '\n';
       });
     }
+    // JavaScript strings remain largely the same as they are for the iframe's context
     var summernoteScripts = """
       <script type="text/javascript">
         \$(document).ready(function () {
@@ -443,244 +582,12 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
         $jsCallbacks
       </script>
     """;
-    var summernoteScriptsAutoHeight = """
-      <script type="text/javascript">
-        \$(document).ready(function () {
-          \$('#summernote-2').summernote({
-            placeholder: "${widget.htmlEditorOptions.hint}",
-            tabsize: 2,
-            disableGrammar: false,
-            spellCheck: ${widget.htmlEditorOptions.spellCheck},
-            maximumFileSize: $maximumFileSize,
-            ${widget.htmlEditorOptions.customOptions}
-            $summernoteCallbacks
-          });
-          
-          \$('#summernote-2').on('summernote.change', function(_, contents, \$editable) {
-            window.parent.postMessage(JSON.stringify({"view": "$createdViewId", "type": "toDart: onChangeContent", "contents": contents}), "*");
-          });
-        });
-       
-        window.parent.addEventListener('message', handleMessage, false);
-        document.onselectionchange = onSelectionChange;
-      
-        function handleMessage(e) {
-          if (e && e.data && e.data.includes("toIframe:")) {
-            var data = JSON.parse(e.data);
-            if (data["view"].includes("$createdViewId")) {
-              if (data["type"].includes("getText")) {
-                var str = \$('#summernote-2').summernote('code');
-                window.parent.postMessage(JSON.stringify({"type": "toDart: getText", "text": str}), "*");
-              }
-              if (data["type"].includes("getHeight")) {
-                var height = document.body.scrollHeight;
-                window.parent.postMessage(JSON.stringify({"view": "$createdViewId", "type": "toDart: htmlHeight", "height": height}), "*");
-              }
-              if (data["type"].includes("setInputType")) {
-                document.getElementsByClassName('note-editable')[0].setAttribute('inputmode', '${widget.htmlEditorOptions.inputType.name}');
-              }
-              if (data["type"].includes("setText")) {
-                \$('#summernote-2').summernote('code', data["text"]);
-              }
-              if (data["type"].includes("setFullScreen")) {
-                \$("#summernote-2").summernote("fullscreen.toggle");
-              }
-              if (data["type"].includes("setFocus")) {
-                \$('#summernote-2').summernote('focus');
-              }
-              if (data["type"].includes("clear")) {
-                \$('#summernote-2').summernote('reset');
-              }
-              if (data["type"].includes("setHint")) {
-                \$(".note-placeholder").html(data["text"]);
-              }
-              if (data["type"].includes("toggleCodeview")) {
-                \$('#summernote-2').summernote('codeview.toggle');
-              }
-              if (data["type"].includes("disable")) {
-                \$('#summernote-2').summernote('disable');
-              }
-              if (data["type"].includes("enable")) {
-                \$('#summernote-2').summernote('enable');
-              }
-              if (data["type"].includes("undo")) {
-                \$('#summernote-2').summernote('undo');
-              }
-              if (data["type"].includes("redo")) {
-                \$('#summernote-2').summernote('redo');
-              }
-              if (data["type"].includes("insertText")) {
-                \$('#summernote-2').summernote('insertText', data["text"]);
-              }
-              if (data["type"].includes("insertHtml")) {
-                \$('#summernote-2').summernote('pasteHTML', data["html"]);
-              }
-              if (data["type"].includes("insertNetworkImage")) {
-                \$('#summernote-2').summernote('insertImage', data["url"], data["filename"]);
-              }
-              if (data["type"].includes("insertLink")) {
-                \$('#summernote-2').summernote('createLink', {
-                  text: data["text"],
-                  url: data["url"],
-                  isNewWindow: data["isNewWindow"]
-                });
-              }
-              if (data["type"].includes("reload")) {
-                window.location.reload();
-              }
-              if (data["type"].includes("addNotification")) {
-                if (data["alertType"] === null) {
-                  \$('.note-status-output').html(
-                    data["html"]
-                  );
-                } else {
-                  \$('.note-status-output').html(
-                    '<div class="' + data["alertType"] + '">' +
-                      data["html"] +
-                    '</div>'
-                  );
-                }
-              }
-              if (data["type"].includes("removeNotification")) {
-                \$('.note-status-output').empty();
-              }
-              if (data["type"].includes("execCommand")) {
-                if (data["argument"] === null) {
-                  document.execCommand(data["command"], false);
-                } else {
-                  document.execCommand(data["command"], false, data["argument"]);
-                }
-              }
-              if (data["type"].includes("changeListStyle")) {
-                var \$focusNode = \$(window.getSelection().focusNode);
-                var \$parentList = \$focusNode.closest("div.note-editable ol, div.note-editable ul");
-                \$parentList.css("list-style-type", data["changed"]);
-              }
-              if (data["type"].includes("changeLineHeight")) {
-                \$('#summernote-2').summernote('lineHeight', data["changed"]);
-              }
-              if (data["type"].includes("changeTextDirection")) {
-                var s=document.getSelection();			
-                if(s==''){
-                    document.execCommand("insertHTML", false, "<p dir='"+data['direction']+"'></p>");
-                }else{
-                    document.execCommand("insertHTML", false, "<div dir='"+data['direction']+"'>"+ document.getSelection()+"</div>");
-                }
-              }
-              if (data["type"].includes("changeCase")) {
-                var selected = \$('#summernote-2').summernote('createRange');
-                  if(selected.toString()){
-                      var texto;
-                      var count = 0;
-                      var value = data["case"];
-                      var nodes = selected.nodes();
-                      for (var i=0; i< nodes.length; ++i) {
-                          if (nodes[i].nodeName == "#text") {
-                              count++;
-                              texto = nodes[i].nodeValue.toLowerCase();
-                              nodes[i].nodeValue = texto;
-                              if (value == 'upper') {
-                                 nodes[i].nodeValue = texto.toUpperCase();
-                              }
-                              else if (value == 'sentence' && count==1) {
-                                 nodes[i].nodeValue = texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
-                              } else if (value == 'title') {
-                                var sentence = texto.split(" ");
-                                for(var j = 0; j< sentence.length; j++){
-                                   sentence[j] = sentence[j][0].toUpperCase() + sentence[j].slice(1);
-                                }
-                                nodes[i].nodeValue = sentence.join(" ");
-                              }
-                          }
-                      }
-                  }
-              }
-              if (data["type"].includes("insertTable")) {
-                \$('#summernote-2').summernote('insertTable', data["dimensions"]);
-              }
-              if (data["type"].includes("getSelectedTextHtml")) {
-                var range = window.getSelection().getRangeAt(0);
-                var content = range.cloneContents();
-                var span = document.createElement('span');
-                  
-                span.appendChild(content);
-                var htmlContent = span.innerHTML;
-                
-                window.parent.postMessage(JSON.stringify({"type": "toDart: getSelectedText", "text": htmlContent}), "*");
-              } else if (data["type"].includes("getSelectedText")) {
-                window.parent.postMessage(JSON.stringify({"type": "toDart: getSelectedText", "text": window.getSelection().toString()}), "*");
-              }
-              $userScripts
-            }
-          }
-        }
-        
-        function onSelectionChange() {
-          let {anchorNode, anchorOffset, focusNode, focusOffset} = document.getSelection();
-          var isBold = false;
-          var isItalic = false;
-          var isUnderline = false;
-          var isStrikethrough = false;
-          var isSuperscript = false;
-          var isSubscript = false;
-          var isUL = false;
-          var isOL = false;
-          var isLeft = false;
-          var isRight = false;
-          var isCenter = false;
-          var isFull = false;
-          var parent;
-          var fontName;
-          var fontSize = 16;
-          var foreColor = "000000";
-          var backColor = "FFFF00";
-          var focusNode2 = \$(window.getSelection().focusNode);
-          var parentList = focusNode2.closest("div.note-editable ol, div.note-editable ul");
-          var parentListType = parentList.css('list-style-type');
-          var lineHeight = \$(focusNode.parentNode).css('line-height');
-          var direction = \$(focusNode.parentNode).css('direction');
-          if (document.queryCommandState) {
-            isBold = document.queryCommandState('bold');
-            isItalic = document.queryCommandState('italic');
-            isUnderline = document.queryCommandState('underline');
-            isStrikethrough = document.queryCommandState('strikeThrough');
-            isSuperscript = document.queryCommandState('superscript');
-            isSubscript = document.queryCommandState('subscript');
-            isUL = document.queryCommandState('insertUnorderedList');
-            isOL = document.queryCommandState('insertOrderedList');
-            isLeft = document.queryCommandState('justifyLeft');
-            isRight = document.queryCommandState('justifyRight');
-            isCenter = document.queryCommandState('justifyCenter');
-            isFull = document.queryCommandState('justifyFull');
-          }
-          if (document.queryCommandValue) {
-            parent = document.queryCommandValue('formatBlock');
-            fontSize = document.queryCommandValue('fontSize');
-            foreColor = document.queryCommandValue('foreColor');
-            backColor = document.queryCommandValue('hiliteColor');
-            fontName = document.queryCommandValue('fontName');
-          }
-          var message = {
-            'view': "$createdViewId", 
-            'type': "toDart: updateToolbar",
-            'style': parent,
-            'fontName': fontName,
-            'fontSize': fontSize,
-            'font': [isBold, isItalic, isUnderline],
-            'miscFont': [isStrikethrough, isSuperscript, isSubscript],
-            'color': [foreColor, backColor],
-            'paragraph': [isUL, isOL],
-            'listStyle': parentListType,
-            'align': [isLeft, isCenter, isRight, isFull],
-            'lineHeight': lineHeight,
-            'direction': direction,
-          };
-          window.parent.postMessage(JSON.stringify(message), "*");
-        }
-        
-        $jsCallbacks
-      </script>
-    """;
+    // The summernoteScriptsAutoHeight is similar, ensure its handleMessage also uses window.addEventListener
+    var summernoteScriptsAutoHeight = summernoteScripts.replaceAll(
+      "height: ${widget.otherOptions.height},",
+      "", // Auto height version doesn't set explicit height for summernote itself
+    );
+
     var filePath =
         'packages/html_editor_enhanced/assets/summernote-no-plugins.html';
     if (widget.htmlEditorOptions.filePath != null) {
@@ -691,88 +598,67 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
         .replaceFirst('<!--darkCSS-->', darkCSS)
         .replaceFirst('<!--headString-->', headString)
         .replaceFirst('<!--summernoteScripts-->', widget.htmlEditorOptions.disabled
-        && widget.htmlEditorOptions.useAutoExpand
+        && widget.htmlEditorOptions.useAutoExpand // ensure this condition is correct for autoExpand
         ? summernoteScriptsAutoHeight : summernoteScripts)
         .replaceFirst('"jquery.min.js"',
-            '"assets/packages/html_editor_enhanced/assets/jquery.min.js"')
+        '"assets/packages/html_editor_enhanced/assets/jquery.min.js"')
         .replaceFirst('"summernote-lite.min.css"',
-            '"assets/packages/html_editor_enhanced/assets/summernote-lite.min.css"')
+        '"assets/packages/html_editor_enhanced/assets/summernote-lite.min.css"')
         .replaceFirst('"summernote-lite.min.js"',
-            '"assets/packages/html_editor_enhanced/assets/summernote-lite.min.js"');
-    if (widget.callbacks != null) addJSListener(widget.callbacks!);
-    final iframe = html.IFrameElement()
-      ..width = MediaQuery.of(widget.initBC).size.width.toString() //'800'
-      ..height = widget.htmlEditorOptions.autoAdjustHeight
-          ? actualHeight.toString()
-          : widget.otherOptions.height.toString()
-      // ignore: unsafe_html, necessary to load HTML string
-      ..srcdoc = htmlString
-      ..style.border = 'none'
-      ..style.overflow = 'hidden'
-      ..onLoad.listen((event) async {
-        if (widget.htmlEditorOptions.disabled && !alreadyDisabled) {
-          widget.controller.disable();
-          alreadyDisabled = true;
+        '"assets/packages/html_editor_enhanced/assets/summernote-lite.min.js"');
+
+    // addJSListener(widget.callbacks!) is removed as its logic is in _masterMessageHandler
+
+    final iframe = web.HTMLIFrameElement();
+    iframe.width = MediaQuery.of(widget.initBC).size.width.toString();
+    iframe.height = (widget.htmlEditorOptions.autoAdjustHeight
+        ? actualHeight.toString()
+        : widget.otherOptions.height.toString());
+    // ignore: unsafe_html, necessary to load HTML string
+    iframe.srcdoc = htmlString.toJS;
+    iframe.style.border = 'none';
+    iframe.style.setProperty('overflow', 'hidden');
+
+    // CORRECTED: Removed 'async' from the callback
+    iframe.onload = ((web.Event event) {
+      if (widget.htmlEditorOptions.disabled && !alreadyDisabled) {
+        widget.controller.disable();
+        alreadyDisabled = true;
+      }
+      widget.callbacks?.onInit?.call();
+      if (widget.htmlEditorOptions.initialText != null) {
+        widget.controller.setText(widget.htmlEditorOptions.initialText!);
+      }
+      var dataHeight = <String, Object?>{'type': 'toIframe: getHeight', 'view': createdViewId};
+      var dataInputType = <String, Object?>{'type': 'toIframe: setInputType', 'view': createdViewId};
+      final jsonEncoder = JsonEncoder();
+      var jsonStrHeight = jsonEncoder.convert(dataHeight);
+      var jsonStrInputType = jsonEncoder.convert(dataInputType);
+
+      // The iframe's contentWindow must exist after onload.
+      // It's good practice to check for null before using contentWindow.
+      final contentWin = iframe.contentWindow;
+      if (contentWin != null) {
+        contentWin.postMessage(jsonStrHeight.toJS, '*'.toJS);
+        contentWin.postMessage(jsonStrInputType.toJS, '*'.toJS);
+      } else {
+        if (kDebugMode) {
+          print("HTML Editor Web: iframe.contentWindow is null in onload. Messages 'getHeight' and 'setInputType' not sent.");
         }
-        if (widget.callbacks != null && widget.callbacks!.onInit != null) {
-          widget.callbacks!.onInit!.call();
-        }
-        if (widget.htmlEditorOptions.initialText != null) {
-          widget.controller.setText(widget.htmlEditorOptions.initialText!);
-        }
-        var data = <String, Object>{'type': 'toIframe: getHeight'};
-        data['view'] = createdViewId;
-        var data2 = <String, Object>{'type': 'toIframe: setInputType'};
-        data2['view'] = createdViewId;
-        final jsonEncoder = JsonEncoder();
-        var jsonStr = jsonEncoder.convert(data);
-        var jsonStr2 = jsonEncoder.convert(data2);
-        html.window.onMessage.listen((event) {
-          var data = event.data is String ? json.decode(event.data) : event.data;
-          if (data['type'] != null &&
-              data['type'].contains('toDart: htmlHeight') &&
-              data['view'] == createdViewId &&
-              widget.htmlEditorOptions.autoAdjustHeight) {
-            final docHeight = data['height'] ?? actualHeight;
-            if ((docHeight != null && docHeight != actualHeight) &&
-                mounted &&
-                docHeight > 0) {
-              setState(mounted, this.setState, () {
-                actualHeight =
-                    docHeight + (toolbarKey.currentContext?.size?.height ?? 0);
-              });
-            }
-          }
-          if (data['type'] != null &&
-              data['type'].contains('toDart: onChangeContent') &&
-              data['view'] == createdViewId) {
-            if (widget.callbacks != null &&
-                widget.callbacks!.onChangeContent != null) {
-              widget.callbacks!.onChangeContent!.call(data['contents']);
-            }
-            if (widget.htmlEditorOptions.shouldEnsureVisible) {
-              Scrollable.of(context).position.ensureVisible(
-                  context.findRenderObject()!,
-                  duration: const Duration(milliseconds: 100),
-                  curve: Curves.easeIn);
-            }
-          }
-          if (data['type'] != null &&
-              data['type'].contains('toDart: updateToolbar') &&
-              data['view'] == createdViewId) {
-            if (widget.controller.toolbar != null) {
-              widget.controller.toolbar!.updateToolbar(data);
-            }
-          }
-        });
-        html.window.postMessage(jsonStr, '*');
-        html.window.postMessage(jsonStr2, '*');
-      });
+      }
+
+      // The listeners for 'toDart: htmlHeight', 'toDart: onChangeContent', 'toDart: updateToolbar'
+      // are now part of the _masterMessageHandler, so no need to set them up here again.
+    }).toJS;
+
     ui.platformViewRegistry
         .registerViewFactory(createdViewId, (int viewId) => iframe);
-    setState(mounted, this.setState, () {
-      summernoteInit = Future.value(true);
-    });
+
+    if (mounted) {
+      setState(mounted, this.setState, () {
+        summernoteInit = Future.value(true);
+      });
+    }
   }
 
   @override
@@ -784,12 +670,12 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
       child: Column(
         children: <Widget>[
           widget.htmlToolbarOptions.toolbarPosition ==
-                  ToolbarPosition.aboveEditor
+              ToolbarPosition.aboveEditor
               ? ToolbarWidget(
-                  key: toolbarKey,
-                  controller: widget.controller,
-                  htmlToolbarOptions: widget.htmlToolbarOptions,
-                  callbacks: widget.callbacks)
+              key: toolbarKey,
+              controller: widget.controller,
+              htmlToolbarOptions: widget.htmlToolbarOptions,
+              callbacks: widget.callbacks)
               : Container(height: 0, width: 0),
           Expanded(
               child: Directionality(
@@ -797,24 +683,29 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
                   child: FutureBuilder<bool>(
                       future: summernoteInit,
                       builder: (context, snapshot) {
-                        if (snapshot.hasData) {
+                        if (snapshot.hasData && snapshot.data == true) { // check snapshot.data
                           return HtmlElementView(
                             viewType: createdViewId,
                           );
-                        } else {
-                          return Container(
+                        } else if (snapshot.hasError) {
+                          return Center(child: Text('Error loading editor: ${snapshot.error}'));
+                        }
+                        else {
+                          return Container( // Placeholder or loading indicator
+                              alignment: Alignment.center,
                               height: widget.htmlEditorOptions.autoAdjustHeight
                                   ? actualHeight
-                                  : widget.otherOptions.height);
+                                  : widget.otherOptions.height,
+                              child: CircularProgressIndicator());
                         }
                       }))),
           widget.htmlToolbarOptions.toolbarPosition ==
-                  ToolbarPosition.belowEditor
+              ToolbarPosition.belowEditor
               ? ToolbarWidget(
-                  key: toolbarKey,
-                  controller: widget.controller,
-                  htmlToolbarOptions: widget.htmlToolbarOptions,
-                  callbacks: widget.callbacks)
+              key: toolbarKey,
+              controller: widget.controller,
+              htmlToolbarOptions: widget.htmlToolbarOptions,
+              callbacks: widget.callbacks)
               : Container(height: 0, width: 0),
         ],
       ),
@@ -931,107 +822,5 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
     return callbacks;
   }
 
-  /// Adds an event listener to check when a callback is fired
-  void addJSListener(Callbacks c) {
-    html.window.onMessage.listen((event) {
-      if(event.data is String) {
-        var data = json.decode(event.data);
-        if (data['type'] != null &&
-            data['type'].contains('toDart:') &&
-            data['view'] == createdViewId) {
-          if (data['type'].contains('onBeforeCommand')) {
-            c.onBeforeCommand?.call(data['contents']);
-          }
-          if (data['type'].contains('onChangeContent')) {
-            c.onChangeContent?.call(data['contents']);
-          }
-          if (data['type'].contains('onChangeCodeview')) {
-            c.onChangeCodeview?.call(data['contents']);
-          }
-          if (data['type'].contains('onDialogShown')) {
-            c.onDialogShown?.call();
-          }
-          if (data['type'].contains('onEnter')) {
-            c.onEnter?.call();
-          }
-          if (data['type'].contains('onFocus')) {
-            c.onFocus?.call();
-          }
-          if (data['type'].contains('onBlur')) {
-            c.onBlur?.call();
-          }
-          if (data['type'].contains('onBlurCodeview')) {
-            c.onBlurCodeview?.call();
-          }
-          if (data['type'].contains('onImageLinkInsert')) {
-            c.onImageLinkInsert?.call(data['url']);
-          }
-          if (data['type'].contains('onImageUpload')) {
-            var map = <String, dynamic>{
-              'lastModified': data['lastModified'],
-              'lastModifiedDate': data['lastModifiedDate'],
-              'name': data['name'],
-              'size': data['size'],
-              'type': data['mimeType'],
-              'base64': data['base64']
-            };
-            var jsonStr = json.encode(map);
-            var file = fileUploadFromJson(jsonStr);
-            c.onImageUpload?.call(file);
-          }
-          if (data['type'].contains('onImageUploadError')) {
-            if (data['base64'] != null) {
-              c.onImageUploadError?.call(
-                  null,
-                  data['base64'],
-                  data['error'].contains('base64')
-                      ? UploadError.jsException
-                      : data['error'].contains('unsupported')
-                      ? UploadError.unsupportedFile
-                      : UploadError.exceededMaxSize);
-            } else {
-              var map = <String, dynamic>{
-                'lastModified': data['lastModified'],
-                'lastModifiedDate': data['lastModifiedDate'],
-                'name': data['name'],
-                'size': data['size'],
-                'type': data['mimeType']
-              };
-              var jsonStr = json.encode(map);
-              var file = fileUploadFromJson(jsonStr);
-              c.onImageUploadError?.call(
-                  file,
-                  null,
-                  data['error'].contains('base64')
-                      ? UploadError.jsException
-                      : data['error'].contains('unsupported')
-                      ? UploadError.unsupportedFile
-                      : UploadError.exceededMaxSize);
-            }
-          }
-          if (data['type'].contains('onKeyDown')) {
-            c.onKeyDown?.call(data['keyCode']);
-          }
-          if (data['type'].contains('onKeyUp')) {
-            c.onKeyUp?.call(data['keyCode']);
-          }
-          if (data['type'].contains('onMouseDown')) {
-            c.onMouseDown?.call();
-          }
-          if (data['type'].contains('onMouseUp')) {
-            c.onMouseUp?.call();
-          }
-          if (data['type'].contains('onPaste')) {
-            c.onPaste?.call();
-          }
-          if (data['type'].contains('onScroll')) {
-            c.onScroll?.call();
-          }
-          if (data['type'].contains('characterCount')) {
-            widget.controller.characterCount = data['totalChars'];
-          }
-        }
-      }
-    });
-  }
+// addJSListener method is removed as its logic is now in _masterMessageHandler
 }

@@ -1961,7 +1961,7 @@ class ToolbarWidgetState extends State<ToolbarWidget> {
                                             style: ElevatedButton.styleFrom(
                                                 backgroundColor:
                                                     Theme.of(context)
-                                                        .dialogBackgroundColor,
+                                                        .dialogTheme.backgroundColor,
                                                 padding: EdgeInsets.only(
                                                     left: 5, right: 5),
                                                 elevation: 0.0),
@@ -2121,7 +2121,7 @@ class ToolbarWidgetState extends State<ToolbarWidget> {
                                         prefixIcon: ElevatedButton(
                                           style: ElevatedButton.styleFrom(
                                               backgroundColor: Theme.of(context)
-                                                  .dialogBackgroundColor,
+                                                  .dialogTheme.backgroundColor,
                                               padding: EdgeInsets.only(
                                                   left: 5, right: 5),
                                               elevation: 0.0),
@@ -2273,7 +2273,7 @@ class ToolbarWidgetState extends State<ToolbarWidget> {
                                         prefixIcon: ElevatedButton(
                                           style: ElevatedButton.styleFrom(
                                               backgroundColor: Theme.of(context)
-                                                  .dialogBackgroundColor,
+                                                  .dialogTheme.backgroundColor,
                                               padding: EdgeInsets.only(
                                                   left: 5, right: 5),
                                               elevation: 0.0),
@@ -2425,7 +2425,7 @@ class ToolbarWidgetState extends State<ToolbarWidget> {
                                         prefixIcon: ElevatedButton(
                                           style: ElevatedButton.styleFrom(
                                               backgroundColor: Theme.of(context)
-                                                  .dialogBackgroundColor,
+                                                  .dialogTheme.backgroundColor,
                                               padding: EdgeInsets.only(
                                                   left: 5, right: 5),
                                               elevation: 0.0),
